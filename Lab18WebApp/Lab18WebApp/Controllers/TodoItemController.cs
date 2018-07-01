@@ -45,12 +45,42 @@ namespace Lab18WebApp.Controllers
 
         }
 
-        //public TodoItem GetSpecificItem(int id)
-        //{
-
-        //}
-
+        /// <summary>
+        /// GET: Studen/Details/id#
+        /// </summary>
+        /// <param name="id">the ID# of the item to get details</param>
+        /// <returns></returns>
         public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            using (var client = new HttpClient())
+            {
+                // add the appropriate properties on top of the client base address.
+                client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
+
+                //the .Result is important for us to extract the result of the response from the call
+                var response = client.GetAsync($"/api/todo/{id}").Result;
+                if (response.EnsureSuccessStatusCode().IsSuccessStatusCode)
+                {
+                    var stringResult = await response.Content.ReadAsStringAsync();
+                    TodoItem datTodoItem = JsonConvert.DeserializeObject<TodoItem>(stringResult);
+
+                    return View(datTodoItem);
+                }
+                return NotFound();
+            }
+        }
+
+        /// <summary>
+        /// GET: TodoItem/Edit/id#
+        /// </summary>
+        /// <param name="id">the ID # to edit</param>
+        /// <returns></returns>
+        public async Task<IActionResult> Edit(int? id)
         {
             using (var client = new HttpClient())
             {
@@ -69,5 +99,38 @@ namespace Lab18WebApp.Controllers
                 return View();
             }
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("ID,Name,IsComplete,DatListID")] TodoItem item)
+        {
+            if (id != item.ID)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    using (var client = new HttpClient())
+                    {
+                        // add the appropriate properties on top of the client base address.
+                        client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
+
+                        //the .Result is important for us to extract the result of the response from the call
+                        var response = await client.PutAsJsonAsync($"/api/todo/{id}", item);
+                    }
+                }
+                catch
+                {
+                    return NotFound();
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(item);
+        }
+
+
     }
 }
