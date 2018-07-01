@@ -44,5 +44,30 @@ namespace Lab18WebApp.Controllers
             }
 
         }
+
+        //public TodoItem GetSpecificItem(int id)
+        //{
+
+        //}
+
+        public async Task<IActionResult> Details(int? id)
+        {
+            using (var client = new HttpClient())
+            {
+                // add the appropriate properties on top of the client base address.
+                client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
+
+                //the .Result is important for us to extract the result of the response from the call
+                var response = client.GetAsync($"/api/todo/{id}").Result;
+                if (response.EnsureSuccessStatusCode().IsSuccessStatusCode)
+                {
+                    var stringResult = await response.Content.ReadAsStringAsync();
+                    TodoItem datTodoItem = JsonConvert.DeserializeObject<TodoItem>(stringResult);
+
+                    return View(datTodoItem);
+                }
+                return View();
+            }
+        }
     }
 }
