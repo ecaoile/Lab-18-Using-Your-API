@@ -55,6 +55,48 @@ namespace Lab18WebApp.Controllers
             }
         }
 
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            using (var client = new HttpClient())
+            {
+
+                try
+                {
+                    // add the appropriate properties on top of the client base address.
+                    client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
+
+                    //the .Result is important for us to extract the result of the response from the call
+                    var listResponse = client.GetAsync($"/api/todolist/{id}").Result;
+                    var itemsResponse = client.GetAsync("/api/todo/").Result;
+
+                    if (listResponse.EnsureSuccessStatusCode().IsSuccessStatusCode 
+                        && itemsResponse.EnsureSuccessStatusCode().IsSuccessStatusCode)
+                    {
+                        var listStringResult = await listResponse.Content.ReadAsStringAsync();
+                        var itemsStringResult = await itemsResponse.Content.ReadAsStringAsync();
+
+                        TodoList datTodoList = JsonConvert.DeserializeObject<TodoList>(listStringResult);
+                        List<TodoItem> demTodoItems = JsonConvert.DeserializeObject<List<TodoItem>>(itemsStringResult);
+
+                        List<TodoItem> matchedItems = demTodoItems.Where(i => i.DatListID == id).ToList();
+
+                        datTodoList.TodoItems = matchedItems;
+                        return View(datTodoList);
+                    }
+                }
+                catch
+                {
+                    return NotFound();
+                }
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
         /// <summary>
         /// GET: TodoList/Create
         /// </summary>
@@ -177,12 +219,21 @@ namespace Lab18WebApp.Controllers
                     client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
 
                     //the .Result is important for us to extract the result of the response from the call
-                    var response = client.GetAsync($"/api/todolist/{id}").Result;
-                    if (response.EnsureSuccessStatusCode().IsSuccessStatusCode)
-                    {
-                        var stringResult = await response.Content.ReadAsStringAsync();
-                        TodoList datTodoList = JsonConvert.DeserializeObject<TodoList>(stringResult);
+                    var listResponse = client.GetAsync($"/api/todolist/{id}").Result;
+                    var itemsResponse = client.GetAsync("/api/todo/").Result;
 
+                    if (listResponse.EnsureSuccessStatusCode().IsSuccessStatusCode
+                        && itemsResponse.EnsureSuccessStatusCode().IsSuccessStatusCode)
+                    {
+                        var listStringResult = await listResponse.Content.ReadAsStringAsync();
+                        var itemsStringResult = await itemsResponse.Content.ReadAsStringAsync();
+
+                        TodoList datTodoList = JsonConvert.DeserializeObject<TodoList>(listStringResult);
+                        List<TodoItem> demTodoItems = JsonConvert.DeserializeObject<List<TodoItem>>(itemsStringResult);
+
+                        List<TodoItem> matchedItems = demTodoItems.Where(i => i.DatListID == id).ToList();
+
+                        datTodoList.TodoItems = matchedItems;
                         return View(datTodoList);
                     }
                 }
