@@ -6,7 +6,7 @@ CODE: Using Your API assignment for Code Fellows 401 C#/ASP.NET course
 
 ## Overview
 This MVC web app uses an external API (created in [lab 17](https://github.com/ecaoile/Lab-17-Web-APIs)) 
-to demonstrate CRUD (create, read, update, delete) operations on an API using an web application.
+to demonstrate CRUD (create, read, update, delete) operations on an API using a web application.
 
 ## Getting Started
 The following is required to run the program.
