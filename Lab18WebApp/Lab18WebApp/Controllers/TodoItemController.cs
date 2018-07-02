@@ -17,7 +17,7 @@ namespace Lab18WebApp.Controllers
         /// <summary>
         /// GET: TodoItem/
         /// </summary>
-        /// <param name="searchString"></param>
+        /// <param name="searchString">string to search for specific todo items by name</param>
         /// <returns></returns>
         public async Task<IActionResult> Index(string searchString)
         {
@@ -47,7 +47,6 @@ namespace Lab18WebApp.Controllers
                 }
                 return View();
             }
-
         }
 
         /// <summary>

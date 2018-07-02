@@ -10,9 +10,10 @@ namespace Lab18WebApp.Models
     {
         public int ID { get; set; }
 
-        [Required]
+        [Required,Display(Name="List")]
         public string Name { get; set; }
 
+        [Display(Name = "To-Do Items")]
         public List<TodoItem> TodoItems { get; set; }
     }
 }
