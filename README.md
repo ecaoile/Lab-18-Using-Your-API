@@ -18,7 +18,6 @@ The following is required to run the program.
 ![Lab 18 Screenshot 1](Lab18-SS1.jpg) <br />
 ![Lab 18 Screenshot 2](Lab18-SS2.jpg)<br />
 ![Lab 18 Screenshot 3](Lab18-SS3.jpg) <br />
-![Lab 18 Screenshot 4](Lab18-SS4.jpg) <br />
 
 ## Happy path
 - open home page
