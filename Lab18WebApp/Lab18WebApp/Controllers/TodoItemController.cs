@@ -70,12 +70,20 @@ namespace Lab18WebApp.Controllers
                     client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
 
                     //the .Result is important for us to extract the result of the response from the call
-                    var response = client.GetAsync($"/api/todo/{id}").Result;
-                    if (response.EnsureSuccessStatusCode().IsSuccessStatusCode)
-                    {
-                        var stringResult = await response.Content.ReadAsStringAsync();
-                        TodoItem datTodoItem = JsonConvert.DeserializeObject<TodoItem>(stringResult);
+                    var itemResponse = client.GetAsync($"/api/todo/{id}").Result;
+                    var listsResponse = client.GetAsync($"/api/todolist/").Result;
 
+                    if (itemResponse.EnsureSuccessStatusCode().IsSuccessStatusCode
+                        && listsResponse.EnsureSuccessStatusCode().IsSuccessStatusCode)
+                    {
+                        var itemStringResult = await itemResponse.Content.ReadAsStringAsync();
+                        var listsStringResult = await listsResponse.Content.ReadAsStringAsync();
+
+                        TodoItem datTodoItem = JsonConvert.DeserializeObject<TodoItem>(itemStringResult);
+                        List<TodoList> demTodoLists = JsonConvert.DeserializeObject<List<TodoList>>(listsStringResult);
+
+                        var matchedList = demTodoLists.Where(l => l.ID == datTodoItem.DatListID);
+                        ViewData["TodoList"] = matchedList;
                         return View(datTodoItem);
                     }
                 }
@@ -91,8 +99,23 @@ namespace Lab18WebApp.Controllers
         /// GET: TodoItem/Create
         /// </summary>
         /// <returns>view</returns>
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            using (var client = new HttpClient())
+            {
+                // add the appropriate properties on top of the client base address.
+                client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
+
+                //the .Result is important for us to extract the result of the response from the call
+                var response = client.GetAsync($"/api/todolist/").Result;
+                if (response.EnsureSuccessStatusCode().IsSuccessStatusCode)
+                {
+                    var stringResult = await response.Content.ReadAsStringAsync();
+                    List<TodoList> demTodoLists = JsonConvert.DeserializeObject<List<TodoList>>(stringResult);
+
+                    ViewData["TodoList"] = demTodoLists;
+                }
+            }
             return View();
         }
 
@@ -139,12 +162,19 @@ namespace Lab18WebApp.Controllers
                 client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
 
                 //the .Result is important for us to extract the result of the response from the call
-                var response = client.GetAsync($"/api/todo/{id}").Result;
-                if (response.EnsureSuccessStatusCode().IsSuccessStatusCode)
-                {
-                    var stringResult = await response.Content.ReadAsStringAsync();
-                    TodoItem datTodoItem = JsonConvert.DeserializeObject<TodoItem>(stringResult);
+                var itemResponse = client.GetAsync($"/api/todo/{id}").Result;
+                var listsResponse = client.GetAsync($"/api/todolist/").Result;
 
+                if (itemResponse.EnsureSuccessStatusCode().IsSuccessStatusCode 
+                    && listsResponse.EnsureSuccessStatusCode().IsSuccessStatusCode)
+                {
+                    var itemStringResult = await itemResponse.Content.ReadAsStringAsync();
+                    var listsStringResult = await listsResponse.Content.ReadAsStringAsync();
+
+                    TodoItem datTodoItem = JsonConvert.DeserializeObject<TodoItem>(itemStringResult);
+                    List<TodoList> demTodoLists = JsonConvert.DeserializeObject<List<TodoList>>(listsStringResult);
+
+                    ViewData["TodoList"] = demTodoLists;
                     return View(datTodoItem);
                 }
                 return View();
