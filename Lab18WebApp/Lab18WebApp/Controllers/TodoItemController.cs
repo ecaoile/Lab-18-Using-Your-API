@@ -90,12 +90,17 @@ namespace Lab18WebApp.Controllers
         /// <summary>
         /// GET: TodoItem/Create
         /// </summary>
-        /// <returns></returns>
+        /// <returns>view</returns>
         public IActionResult Create()
         {
             return View();
         }
 
+        /// <summary>
+        /// POST: TodoItem/Create
+        /// </summary>
+        /// <param name="item">TodoItem object to add</param>
+        /// <returns>view</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ID,Name,IsComplete,DatListID")] TodoItem item)

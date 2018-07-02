@@ -10,7 +10,7 @@ namespace Lab18WebApp.Models
     {
         public int ID { get; set; }
 
-        [Required,Display(Name="List")]
+        [Required,Display(Name="List Name")]
         public string Name { get; set; }
 
         [Display(Name = "To-Do Items")]

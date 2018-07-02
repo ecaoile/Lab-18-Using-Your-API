@@ -55,6 +55,158 @@ namespace Lab18WebApp.Controllers
             }
         }
 
+        /// <summary>
+        /// GET: TodoList/Create
+        /// </summary>
+        /// <returns>view</returns>
+        public IActionResult Create()
+        {
+            return View();
+        }
 
+        /// <summary>
+        /// POST: TodoList/Create
+        /// </summary>
+        /// <param name="list">the TodoList object to add</param>
+        /// <returns>view</returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("ID,Name")] TodoList list)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    using (var client = new HttpClient())
+                    {
+                        // add the appropriate properties on top of the client base address.
+                        client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
+
+                        //the .Result is important for us to extract the result of the response from the call
+                        var response = await client.PostAsJsonAsync($"/api/todolist/", list);
+                    }
+                }
+                catch
+                {
+                    return NotFound();
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(list);
+        }
+
+        /// <summary>
+        /// GET: TodoList/edit/id#
+        /// </summary>
+        /// <param name="id">ID # of the TodoList object to edit</param>
+        /// <returns>view</returns>
+        public async Task<IActionResult> Edit(int? id)
+        {
+            using (var client = new HttpClient())
+            {
+                // add the appropriate properties on top of the client base address.
+                client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
+
+                //the .Result is important for us to extract the result of the response from the call
+                var response = client.GetAsync($"/api/todolist/{id}").Result;
+                if (response.EnsureSuccessStatusCode().IsSuccessStatusCode)
+                {
+                    var stringResult = await response.Content.ReadAsStringAsync();
+                    TodoList datTodoList = JsonConvert.DeserializeObject<TodoList>(stringResult);
+
+                    return View(datTodoList);
+                }
+                return View();
+            }
+        }
+
+        /// <summary>
+        /// POST: TodoList/Edit/id#
+        /// </summary>
+        /// <param name="id">ID # of the TodoList object to edit</param>
+        /// <param name="list">a new TodoList object with the edited properties</param>
+        /// <returns>view</returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("ID,Name")] TodoList list)
+        {
+            if (id != list.ID)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    using (var client = new HttpClient())
+                    {
+                        // add the appropriate properties on top of the client base address.
+                        client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
+
+                        //the .Result is important for us to extract the result of the response from the call
+                        var response = await client.PutAsJsonAsync($"/api/todolist/{id}", list);
+                    }
+                }
+                catch
+                {
+                    return NotFound();
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(list);
+        }
+
+        /// <summary>
+        /// GET: TodoList/Delete/id#
+        /// </summary>
+        /// <param name="id">ID # of the TodoList object to delete</param>
+        /// <returns>view</returns>
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            using (var client = new HttpClient())
+            {
+                try
+                {
+                    // add the appropriate properties on top of the client base address.
+                    client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
+
+                    //the .Result is important for us to extract the result of the response from the call
+                    var response = client.GetAsync($"/api/todolist/{id}").Result;
+                    if (response.EnsureSuccessStatusCode().IsSuccessStatusCode)
+                    {
+                        var stringResult = await response.Content.ReadAsStringAsync();
+                        TodoList datTodoList = JsonConvert.DeserializeObject<TodoList>(stringResult);
+
+                        return View(datTodoList);
+                    }
+                }
+                catch
+                {
+                    return NotFound();
+                }
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            using (var client = new HttpClient())
+            {
+                // add the appropriate properties on top of the client base address.
+                client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
+
+                //the .Result is important for us to extract the result of the response from the call
+                var response = await client.DeleteAsync($"/api/todolist/{id}");
+            }
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
