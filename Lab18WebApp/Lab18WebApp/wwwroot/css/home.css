@@ -1,0 +1,26 @@
+﻿#home {
+    background-color: #e6f2ff;
+}
+
+.center {
+    padding: 2em;
+    text-align: center;
+}
+
+    .center > img {
+        display: block;
+        margin: 1em auto;
+        width: 40%;
+    }
+
+.home-button {
+    padding: .5em 1em;
+    margin: 1em;
+    border-radius: 5px;
+}
+
+    .home-button:hover {
+        background-color: #00472d;
+        color: #fff;
+        transition: background 0.2s linear;
+    }

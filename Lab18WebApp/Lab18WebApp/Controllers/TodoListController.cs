@@ -1,23 +1,20 @@
-﻿using System;
+﻿using Lab18WebApp.Models;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Lab18WebApp.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 namespace Lab18WebApp.Controllers
 {
-    public class TodoItemController : Controller
+    public class TodoListController : Controller
     {
         /// <summary>
-        /// GET: TodoItem/
+        /// GET: TodoList/
         /// </summary>
-        /// <param name="searchString">string to search for specific todo items by name</param>
+        /// <param name="searchString">string to search for specific todo list by name</param>
         /// <returns></returns>
         public async Task<IActionResult> Index(string searchString)
         {
@@ -27,68 +24,39 @@ namespace Lab18WebApp.Controllers
                 client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
 
                 //the .Result is important for us to extract the result of the response from the call
-                var response = client.GetAsync("/api/todo/").Result;
-                if (response.EnsureSuccessStatusCode().IsSuccessStatusCode)
+                var listsResponse = client.GetAsync("/api/todolist/").Result;
+                var itemsResponse = client.GetAsync("/api/todo/").Result;
+                if (listsResponse.EnsureSuccessStatusCode().IsSuccessStatusCode 
+                    && listsResponse.EnsureSuccessStatusCode().IsSuccessStatusCode)
                 {
-                    var stringResult = await response.Content.ReadAsStringAsync();
-                    List<TodoItem> demTodoItems = JsonConvert.DeserializeObject<List<TodoItem>>(stringResult);
-                    var todoItems = from t in demTodoItems
-                                        select t;
+                    var stringListResult = await listsResponse.Content.ReadAsStringAsync();
+                    var stringItemsResult = await itemsResponse.Content.ReadAsStringAsync();
+
+                    List<TodoList> demTodoLists = JsonConvert.DeserializeObject<List<TodoList>>(stringListResult);
+                    List<TodoItem> demTodoItems = JsonConvert.DeserializeObject<List<TodoItem>>(stringItemsResult);
+
+                    var todoLists = from l in demTodoLists
+                                    select l;
+
+                    var todoItems = from i in demTodoItems
+                                    select i;
 
                     if (!String.IsNullOrEmpty(searchString))
                     {
-                        todoItems = todoItems.Where(s => s.Name.Contains(searchString));
+                        todoLists = todoLists.Where(s => s.Name.Contains(searchString));
                     }
 
-                    var todoItemsVM = new TodoItemsViewModel();
-                    todoItemsVM.TodoItems = todoItems.ToList();
-
-                    return View(todoItemsVM);
+                    var todoListsVM = new TodoListsViewModel();
+                    todoListsVM.TodoLists = todoLists.ToList();
+                    todoListsVM.TodoItems = todoItems.ToList();
+                    return View(todoListsVM);
                 }
                 return View();
             }
         }
 
         /// <summary>
-        /// GET: TodoItem/Details/id#
-        /// </summary>
-        /// <param name="id">the ID# of the item to get details</param>
-        /// <returns>view</returns>
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            using (var client = new HttpClient())
-            {
-                
-                try
-                {
-                    // add the appropriate properties on top of the client base address.
-                    client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
-
-                    //the .Result is important for us to extract the result of the response from the call
-                    var response = client.GetAsync($"/api/todo/{id}").Result;
-                    if (response.EnsureSuccessStatusCode().IsSuccessStatusCode)
-                    {
-                        var stringResult = await response.Content.ReadAsStringAsync();
-                        TodoItem datTodoItem = JsonConvert.DeserializeObject<TodoItem>(stringResult);
-
-                        return View(datTodoItem);
-                    }
-                }
-                catch
-                {
-                    return NotFound();
-                }
-            }
-            return RedirectToAction(nameof(Index));
-        }
-
-        /// <summary>
-        /// GET: TodoItem/Create
+        /// GET: TodoList/Create
         /// </summary>
         /// <returns>view</returns>
         public IActionResult Create()
@@ -97,13 +65,13 @@ namespace Lab18WebApp.Controllers
         }
 
         /// <summary>
-        /// POST: TodoItem/Create
+        /// POST: TodoList/Create
         /// </summary>
-        /// <param name="item">TodoItem object to add</param>
+        /// <param name="list">the TodoList object to add</param>
         /// <returns>view</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,Name,IsComplete,DatListID")] TodoItem item)
+        public async Task<IActionResult> Create([Bind("ID,Name")] TodoList list)
         {
             if (ModelState.IsValid)
             {
@@ -115,7 +83,7 @@ namespace Lab18WebApp.Controllers
                         client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
 
                         //the .Result is important for us to extract the result of the response from the call
-                        var response = await client.PostAsJsonAsync($"/api/todo/", item);
+                        var response = await client.PostAsJsonAsync($"/api/todolist/", list);
                     }
                 }
                 catch
@@ -124,12 +92,13 @@ namespace Lab18WebApp.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(item);
+            return View(list);
         }
+
         /// <summary>
-        /// GET: TodoItem/Edit/id#
+        /// GET: TodoList/edit/id#
         /// </summary>
-        /// <param name="id">the ID # to edit</param>
+        /// <param name="id">ID # of the TodoList object to edit</param>
         /// <returns>view</returns>
         public async Task<IActionResult> Edit(int? id)
         {
@@ -139,29 +108,29 @@ namespace Lab18WebApp.Controllers
                 client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
 
                 //the .Result is important for us to extract the result of the response from the call
-                var response = client.GetAsync($"/api/todo/{id}").Result;
+                var response = client.GetAsync($"/api/todolist/{id}").Result;
                 if (response.EnsureSuccessStatusCode().IsSuccessStatusCode)
                 {
                     var stringResult = await response.Content.ReadAsStringAsync();
-                    TodoItem datTodoItem = JsonConvert.DeserializeObject<TodoItem>(stringResult);
+                    TodoList datTodoList = JsonConvert.DeserializeObject<TodoList>(stringResult);
 
-                    return View(datTodoItem);
+                    return View(datTodoList);
                 }
                 return View();
             }
         }
 
         /// <summary>
-        /// POST: Edit/TodoItem/id#
+        /// POST: TodoList/Edit/id#
         /// </summary>
-        /// <param name="id">the ID # of the item to edit</param>
-        /// <param name="item">the item with changes</param>
+        /// <param name="id">ID # of the TodoList object to edit</param>
+        /// <param name="list">a new TodoList object with the edited properties</param>
         /// <returns>view</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Name,IsComplete,DatListID")] TodoItem item)
+        public async Task<IActionResult> Edit(int id, [Bind("ID,Name")] TodoList list)
         {
-            if (id != item.ID)
+            if (id != list.ID)
             {
                 return NotFound();
             }
@@ -176,7 +145,7 @@ namespace Lab18WebApp.Controllers
                         client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
 
                         //the .Result is important for us to extract the result of the response from the call
-                        var response = await client.PutAsJsonAsync($"/api/todo/{id}", item);
+                        var response = await client.PutAsJsonAsync($"/api/todolist/{id}", list);
                     }
                 }
                 catch
@@ -185,14 +154,14 @@ namespace Lab18WebApp.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(item);
+            return View(list);
         }
 
         /// <summary>
-        /// GET: Delete/TodoItem/id#
+        /// GET: TodoList/Delete/id#
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
+        /// <param name="id">ID # of the TodoList object to delete</param>
+        /// <returns>view</returns>
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -202,20 +171,19 @@ namespace Lab18WebApp.Controllers
 
             using (var client = new HttpClient())
             {
-
                 try
                 {
                     // add the appropriate properties on top of the client base address.
                     client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
 
                     //the .Result is important for us to extract the result of the response from the call
-                    var response = client.GetAsync($"/api/todo/{id}").Result;
+                    var response = client.GetAsync($"/api/todolist/{id}").Result;
                     if (response.EnsureSuccessStatusCode().IsSuccessStatusCode)
                     {
                         var stringResult = await response.Content.ReadAsStringAsync();
-                        TodoItem datTodoItem = JsonConvert.DeserializeObject<TodoItem>(stringResult);
+                        TodoList datTodoList = JsonConvert.DeserializeObject<TodoList>(stringResult);
 
-                        return View(datTodoItem);
+                        return View(datTodoList);
                     }
                 }
                 catch
@@ -236,9 +204,26 @@ namespace Lab18WebApp.Controllers
                 client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
 
                 //the .Result is important for us to extract the result of the response from the call
-                var response = await client.DeleteAsync($"/api/todo/{id}");
+                var itemsResponse = client.GetAsync("/api/todo/").Result;
+                if (itemsResponse.EnsureSuccessStatusCode().IsSuccessStatusCode)
+                {
+                    var stringItemsResult = await itemsResponse.Content.ReadAsStringAsync();
+
+                    List<TodoItem> demTodoItems = JsonConvert.DeserializeObject<List<TodoItem>>(stringItemsResult);
+
+                    var doomedTodos = from i in demTodoItems
+                                      where i.DatListID == id
+                                      select i;
+
+                    foreach (var item in doomedTodos)
+                    {
+                        await client.DeleteAsync($"/api/todo/{item.ID}");
+                    }
+
+                    var listResponse = await client.DeleteAsync($"/api/todolist/{id}");
+                }
+                return RedirectToAction(nameof(Index));
             }
-            return RedirectToAction(nameof(Index));
         }
     }
 }
