@@ -28,6 +28,13 @@
         <dd>
             @Html.DisplayFor(model => model.Name)
         </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.TodoItems)
+        </dt>
+            @foreach(var item in Model.TodoItems)
+            {
+                <dd>@Html.DisplayFor(modelItem => item.Name)</dd>
+            }
     </dl>
 </div>
 <div>

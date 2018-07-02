@@ -38,7 +38,7 @@
             @Html.DisplayNameFor(model => model.DatListID)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.DatListID)
+            @(Html.DropDownListFor(model => model.DatListID, new SelectList((IEnumerable<TodoList>)ViewData["TodoList"], "ID", "Name")))
         </dd>
     </dl>
 </div>

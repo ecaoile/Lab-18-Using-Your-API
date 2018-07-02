@@ -16,7 +16,7 @@ namespace Lab18WebApp.Models
         [Required, Display(Name = "Complete?")]
         public bool IsComplete { get; set; }
 
-        [Required,Display(Name = "To-do List ID")]
+        [Required,Display(Name = "To-do List")]
         public int DatListID { get; set; }
 
         public TodoList TodoList { get; set; }

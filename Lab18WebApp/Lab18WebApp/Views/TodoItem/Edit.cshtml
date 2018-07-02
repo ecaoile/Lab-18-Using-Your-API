@@ -31,7 +31,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="DatListID" class="control-label"></label>
-                <input asp-for="DatListID" class="form-control" />
+                @(Html.DropDownListFor(i => i.DatListID, new SelectList((IEnumerable<TodoList>)ViewData["TodoList"], "ID", "Name")))
                 <span asp-validation-for="DatListID" class="text-danger"></span>
             </div>
             <div class="form-group">
