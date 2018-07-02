@@ -204,9 +204,26 @@ namespace Lab18WebApp.Controllers
                 client.BaseAddress = new Uri("http://todoapilab17.azurewebsites.net/");
 
                 //the .Result is important for us to extract the result of the response from the call
-                var response = await client.DeleteAsync($"/api/todolist/{id}");
+                var itemsResponse = client.GetAsync("/api/todo/").Result;
+                if (itemsResponse.EnsureSuccessStatusCode().IsSuccessStatusCode)
+                {
+                    var stringItemsResult = await itemsResponse.Content.ReadAsStringAsync();
+
+                    List<TodoItem> demTodoItems = JsonConvert.DeserializeObject<List<TodoItem>>(stringItemsResult);
+
+                    var doomedTodos = from i in demTodoItems
+                                      where i.DatListID == id
+                                      select i;
+
+                    foreach (var item in doomedTodos)
+                    {
+                        await client.DeleteAsync($"/api/todo/{item.ID}");
+                    }
+
+                    var listResponse = await client.DeleteAsync($"/api/todolist/{id}");
+                }
+                return RedirectToAction(nameof(Index));
             }
-            return RedirectToAction(nameof(Index));
         }
     }
 }
