@@ -34,7 +34,7 @@
         </dt>
         @foreach (var item in Model.TodoItems)
         {
-            <dd>@Html.DisplayFor(modelItem => item.Name)</dd>
+            <dd><a href="/TodoItem/Details/@item.ID">@Html.DisplayFor(modelItem => item.Name)</a></dd>
         }
     </dl>
 

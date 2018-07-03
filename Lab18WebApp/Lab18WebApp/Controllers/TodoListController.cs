@@ -64,7 +64,6 @@ namespace Lab18WebApp.Controllers
 
             using (var client = new HttpClient())
             {
-
                 try
                 {
                     // add the appropriate properties on top of the client base address.

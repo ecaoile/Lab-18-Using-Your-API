@@ -82,8 +82,8 @@ namespace Lab18WebApp.Controllers
                         TodoItem datTodoItem = JsonConvert.DeserializeObject<TodoItem>(itemStringResult);
                         List<TodoList> demTodoLists = JsonConvert.DeserializeObject<List<TodoList>>(listsStringResult);
 
-                        var matchedList = demTodoLists.Where(l => l.ID == datTodoItem.DatListID);
-                        ViewData["TodoList"] = matchedList;
+                        var matchedList = demTodoLists.FirstOrDefault(l => l.ID == datTodoItem.DatListID);
+                        datTodoItem.TodoList = matchedList;
                         return View(datTodoItem);
                     }
                 }
@@ -147,6 +147,9 @@ namespace Lab18WebApp.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            // This whole using statement is necessary to pass in the ViewData of TodoLists if user input
+            // was not valid. Otherwise, an error or an empty page will appear because the dropdown will
+            // contain null values on page reload.
             using (var client = new HttpClient())
             {
                 // add the appropriate properties on top of the client base address.
@@ -165,6 +168,7 @@ namespace Lab18WebApp.Controllers
             }
             return View();
         }
+
         /// <summary>
         /// GET: TodoItem/Edit/id#
         /// </summary>
@@ -248,7 +252,6 @@ namespace Lab18WebApp.Controllers
 
             using (var client = new HttpClient())
             {
-
                 try
                 {
                     // add the appropriate properties on top of the client base address.
@@ -272,6 +275,11 @@ namespace Lab18WebApp.Controllers
             }
         }
 
+        /// <summary>
+        /// deletes TodoItem object from database
+        /// </summary>
+        /// <param name="id">ID# of the TodoItem object to delete</param>
+        /// <returns>index page view</returns>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
